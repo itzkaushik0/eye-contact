@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>👁️ Eye Contact Enforcer - Stupid Hackathon Edition</title>
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- MediaPipe FaceMesh & Camera Utils via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <!-- Onboarding Intent Gate (Doomscrolling vs Self-Improvement) -->
+  <div id="onboarding-gate" class="gate-overlay">
+    <div class="gate-card">
+      <div class="gate-badge">🛑 MANDATORY INTENT SCREENING</div>
+      <h2 class="gate-title">SELECT YOUR USAGE OBJECTIVE</h2>
+      <p class="gate-desc">Before facial surveillance commences, declare your purpose. Are you here to rot your attention span or ascend?</p>
+      
+      <div class="gate-options-grid">
+        <!-- Option 1: Doomscrolling -->
+        <div id="choose-doomscroll-btn" class="gate-option-card card-doomscroll">
+          <div class="option-icon">🧟‍♂️</div>
+          <div class="option-title">DOOMSCROLLING</div>
+          <p class="option-desc">"I am here to mindlessly rot my brain, look away at my phone, and get judged by Travis Scott Fish."</p>
+          <div class="option-price-tag">PRICE: FREE (COSTS DIGNITY)</div>
+          <button class="btn btn-doomscroll">Enter Doomscroll Mode ➔</button>
+        </div>
+
+        <!-- Option 2: Self-Improvement -->
+        <div id="choose-improve-btn" class="gate-option-card card-improve">
+          <div class="option-icon">📈</div>
+          <div class="option-title">SELF-IMPROVEMENT</div>
+          <p class="option-desc">"I want to cure screen addiction, fix my dopamine receptors, and achieve 100% unbreakable focus."</p>
+          <div class="option-price-tag price-premium">👑 SUBSCRIPTION REQUIRED</div>
+          <button class="btn btn-improve">Ascend & Improve ➔</button>
+        </div>
+      </div>
+
+      <div class="gate-footer">
+        *Selecting Doomscroll grants immediate access to the Eye Contact Enforcer.
+      </div>
+    </div>
+  </div>
+
+  <!-- Fullscreen Horror Jumpscare Overlay -->
+  <div id="horror-overlay"></div>
+
+  <!-- Fullscreen Procedural Animated Eyeballs Canvas -->
+  <canvas id="eyes-canvas"></canvas>
+
+  <!-- Travis Scott Fish Meme Popup (Primary Look-Away Jumpscare) -->
+  <div id="travis-meme-popup" class="hidden">
+    <div class="meme-frame">
+      <img id="travis-meme-img" src="" alt="Meme Attack" />
+    </div>
+    <div id="travis-meme-caption" class="meme-caption">BRO LOOKED AWAY 💀</div>
+  </div>
+
+  <!-- Dedicated Standalone Subscription Plan Window (Shown ONLY if clicked on Subscription) -->
+  <div id="subscription-view" class="subscription-view hidden">
+    <div class="sub-view-container">
+      
+      <!-- Top Subscription Header (NO CAMERA, NO CAMERA BUTTONS) -->
+      <div class="sub-view-header">
+        <div class="logo-group">
+          <div class="logo-icon">👑</div>
+          <div>
+            <h1 class="app-title" style="background: linear-gradient(135deg, #ffd700, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+              SELF-IMPROVEMENT PRO MAX
+            </h1>
+            <div class="app-subtitle" style="color: #cbd5e1;">Official Focus Transcendence Plan</div>
+          </div>
+        </div>
+
+        <button id="sub-view-switch-doomscroll-btn" class="btn" style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;">
+          💀 Switch to Free Doomscroll Mode
+        </button>
+      </div>
+
+      <!-- Main Subscription Plan Window (Zero camera, pure paywall) -->
+      <div class="sub-view-card">
+        
+        <div class="sub-plan-badge">⚡ SOUL ACCELERATION TIER</div>
+        <h2 class="sub-plan-title">UNLIMITED FOCUS & ANTI-ROT SUBSCRIPTION</h2>
+        <p class="sub-plan-desc">Camera access has been completely revoked for this commercial transaction. To cure doomscrolling, you must sacrifice capital.</p>
+
+        <div class="sub-pricing-box">
+          <div class="sub-price-currency">$</div>
+          <div class="sub-price-val">67.67</div>
+          <div class="sub-price-period">/ nanosecond<br><span style="font-size: 0.75rem; color: #ef4444; font-weight: 700;">(Billed recursively forever)</span></div>
+        </div>
+
+        <div class="sub-perks-list">
+          <div class="perk-item">✔ <strong>0.00001% Increase</strong> in perceived attention span</div>
+          <div class="perk-item">✔ <strong>Zero Camera Surveillance</strong>: No camera opened or required for this plan window</div>
+          <div class="perk-item">✔ <strong>Travis Scott Fish</strong> will judge your failure in glorious 8K resolution</div>
+          <div class="perk-item">✔ <strong>Artificial Dopamine Detox</strong>: Glitch shaders simulate productivity</div>
+          <div class="perk-item">✔ <strong>Exclusive Right</strong> to tell your hackathon judges you paid $67.67 for discipline</div>
+        </div>
+
+        <!-- Fake Payment Form -->
+        <div class="fake-pay-form">
+          <div class="form-group">
+            <label>Credit Card Number:</label>
+            <input type="text" class="form-input" value="4242 •••• •••• 6767" readonly />
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label>Expiry:</label>
+              <input type="text" class="form-input" value="13/37" readonly />
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>CVV / Soul Pin:</label>
+              <input type="text" class="form-input" value="666" readonly />
+            </div>
+          </div>
+        </div>
+
+        <div id="sub-view-status-msg" class="pay-status hidden"></div>
+
+        <div class="sub-btn-group">
+          <button id="sub-view-pay-btn" class="btn btn-pay-now">
+            💳 Authorize $67.67 & Improve Now
+          </button>
+          <button id="sub-view-downgrade-btn" class="btn btn-secondary">
+            💀 I am broke. Return me to Doomscroll Mode (Free with Camera)
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Main Application Container (Usual Doomscrolling Window) -->
+  <div class="app-container hidden" id="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="logo-group">
+        <div class="logo-icon">👁️</div>
+        <div>
+          <h1 class="app-title">EYE CONTACT ENFORCER</h1>
+          <div class="app-subtitle">Stupid Theme Hackathon Edition v2.0</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="open-upgrade-btn" class="btn" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.5); color: #fbbf24;">
+          👑 Improve Plan ($67.67)
+        </button>
+        <button id="start-cam-btn" class="btn btn-primary">
+          📹 Start Camera
+        </button>
+        <button id="demo-mode-btn" class="btn">
+          🎮 Test / Demo Mode
+        </button>
+        <button id="open-media-btn" class="btn">
+          📁 Media Arsenal (Pics & Audios)
+        </button>
+        <button id="generate-cert-btn" class="btn">
+          📜 Get Certificate
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Grid -->
+    <main class="main-grid">
+      
+      <!-- Center Stage / Camera Viewport -->
+      <section class="stage-container">
+        
+        <div class="video-wrapper">
+          <video id="webcam-video" autoplay playsinline muted></video>
+          
+          <!-- Targeting Reticle -->
+          <div class="reticle-overlay">
+            <div class="reticle-box"></div>
+          </div>
+
+          <!-- Real-time Status Badge -->
+          <div class="video-status-bar">
+            <div id="status-badge" class="status-badge status-good">
+              🟢 WAITING FOR CAMERA / TEST MODE
+            </div>
+            <div class="hud-pill" style="background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: #94a3b8;">
+              AI GAZE ACTIVE
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage Bottom Controls & Compliance Meter -->
+        <div class="stage-controls">
+          <div class="compliance-container">
+            <div class="meter-label-row">
+              <span>EYE CONTACT COMPLIANCE</span>
+              <span id="meter-percent">100%</span>
+            </div>
+            <div class="compliance-meter">
+              <div id="compliance-meter-fill"></div>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="test-spooky-btn" class="btn btn-sm" title="Preview creepy voice">
+              🔊 Test "I see you"
+            </button>
+          </div>
+        </div>
+
+        <!-- Interactive Demo Bar (Visible in Demo Mode) -->
+        <div id="demo-controls" class="demo-controls-bar hidden">
+          <button id="sim-away-btn" class="btn btn-danger btn-sm">
+            🚨 Trigger Look Away (or Press Spacebar)
+          </button>
+          <button id="sim-return-btn" class="btn btn-active btn-sm">
+            🟢 Trigger Look Back (Return to Usual)
+          </button>
+        </div>
+
+      </section>
+
+      <!-- Sidebar Telemetry & Hackathon Metrics -->
+      <aside class="sidebar">
+        
+        <div class="card">
+          <h3 class="card-title">📊 Stare Metrics</h3>
+          <div class="stat-row">
+            <div class="stat-box">
+              <div id="stat-streak" class="stat-num">0s</div>
+              <div class="stat-label">Current Stare Streak</div>
+            </div>
+            <div class="stat-box">
+              <div id="stat-violations" class="stat-num" style="color: var(--neon-red);">0</div>
+              <div class="stat-label">Unlawful Blinks</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">⚡ Neural Telemetry</h3>
+          <div id="telemetry-output" class="telemetry-screen">
+[SYSTEM] Eye Contact Enforcer Initialized.
+[READY] Press "Start Camera" or "Test / Demo Mode" to activate.
+[MEME] Primary Look-Away: Travis Scott Fish with Braids & Chain.
+[AUDIO] Sequential Audio: Horror Stinger -> "I see you."
+          </div>
+        </div>
+
+        <div class="card" style="background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2);">
+          <h3 class="card-title" style="color: var(--neon-green);">💡 Hackathon Instructions</h3>
+          <p style="font-size: 0.8rem; line-height: 1.5; color: #cbd5e1;">
+            • <strong>Look away</strong>: The screen shakes, giant cursed eyes appear, the <strong>Travis Scott Fish</strong> pops up, and a deep creepy voice says <em>"I see you."</em><br>
+            • <strong>Look back</strong>: All horror elements instantly silence and everything returns cleanly to normal!<br>
+            • <strong>Share pics & audios</strong>: Click <em>Media Arsenal</em> to add more memes and sound clips!
+          </p>
+        </div>
+
+      </aside>
+
+    </main>
+
+  </div>
+
+  <!-- Media Manager Modal (Upload Custom Images & Audios) -->
+  <div id="media-modal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h3 class="modal-title">📁 Media Arsenal & Meme Hub</h3>
+        <button id="close-media-btn" class="btn btn-sm">✕ Close</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Upload Section -->
+        <div class="upload-deck">
+          
+          <!-- Image Upload Box -->
+          <div class="upload-box">
+            <h4>🖼️ Upload Custom Picture / Meme</h4>
+            <div class="form-group">
+              <label>Select Image (PNG, JPG, GIF, WebP):</label>
+              <input type="file" id="upload-img-input" accept="image/*" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Trigger Action:</label>
+              <select id="upload-img-category" class="form-select">
+                <option value="lookaway">🚨 Look Away Punishment (Pops up with eyes)</option>
+                <option value="lookback">💖 Look Back Reward (Anime Good Boy)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Meme Caption Text:</label>
+              <input type="text" id="upload-img-caption" placeholder="e.g. BRO REALLY THOUGHT HE COULD BLINK 💀" class="form-input" />
+            </div>
+          </div>
+
+          <!-- Audio Upload Box -->
+          <div class="upload-box">
+            <h4>🎵 Upload Custom Audio Clip</h4>
+            <div class="form-group">
+              <label>Select Audio (MP3, WAV, OGG):</label>
+              <input type="file" id="upload-audio-input" accept="audio/*" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>Trigger Action:</label>
+              <select id="upload-audio-trigger" class="form-select">
+                <option value="lookaway">🚨 Look Away Horror Sound</option>
+                <option value="lookback">💖 Look Back Anime / Victory Sound</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div style="font-size: 0.85rem; color: var(--neon-gold); font-weight: 600;">
+          💡 Tip: You can also drag and drop image or audio files anywhere onto the screen at any time!
+        </div>
+
+        <!-- Active Media Grid -->
+        <div>
+          <h4 style="margin-bottom: 12px; font-size: 0.95rem; color: var(--text-muted);">ACTIVE MEMES & AUDIO CLIPS</h4>
+          <div id="media-items-grid" class="media-items-grid"></div>
+        </div>
+
+      </div>
+
+    </div>
+
+
+  <!-- Application Scripts -->
+  <script src="audio.js"></script>
+  <script src="memes.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
